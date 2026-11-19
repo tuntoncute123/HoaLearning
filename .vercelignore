@@ -12,3 +12,4 @@ data-production
 artifacts
 test-results
 playwright-report
+public/precache-manifest.js

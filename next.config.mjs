@@ -1,6 +1,8 @@
+import { writePrecache } from "./scripts/precache.mjs";
 const config = {
   serverExternalPackages: ["pg", "pdfjs-dist", "@napi-rs/canvas", "web-push"],
   poweredByHeader: false,
+  compiler: { runAfterProductionCompile: writePrecache },
   outputFileTracingIncludes: {
     "/api/**/*": [
       "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",

@@ -61,7 +61,7 @@ Với dữ liệu lớp học cũ cần giữ, dùng bước chuyển SQLite bê
 ## Deploy ứng dụng lên Vercel
 
 1. Import repository, chọn thư mục **`hoa`** nếu repo chứa nhiều dự án; nếu repo bắt đầu ngay ở thư mục này thì Root Directory là `.`.
-2. Framework: **Next.js**; Node.js: **24.x**; Install: `npm ci`; Build: **`npm run build`**; Output Directory: để mặc định. Không đổi Build thành chỉ `next build`: bước sau build tạo cache PWA theo phiên bản.
+2. Framework: **Next.js**; Node.js: **24.x**; Install: `npm ci`; Build: **`npm run build`**; Output Directory: để mặc định. Hook `runAfterProductionCompile` tạo danh sách cache PWA theo phiên bản trước khi Vercel đóng gói tài nguyên; danh sách sinh trên máy local không được upload.
 3. Thêm biến môi trường:
    - `DATABASE_URL`: URL PostgreSQL trên Coolify có thể truy cập từ bên ngoài.
    - `DATABASE_POOL_MAX=3`: tối đa 3 kết nối cho mỗi instance; cân đối với giới hạn kết nối DB.

@@ -13,5 +13,3 @@ playwright-report/
 !.env.example
 .local-postgres/
 public/precache-manifest.js
-.vercel
-.env*
