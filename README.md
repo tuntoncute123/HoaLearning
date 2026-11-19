@@ -121,4 +121,4 @@ Kiểm thử bao gồm đăng nhập/phân quyền, bảo vệ đáp án, bản 
 
 Các ảnh và số đo typography nằm trong `artifacts/` (không đưa vào git). Đã kiểm tra trên Chromium ở 360, 390, 768, 1366, 1920, 2560 CSS px và zoom trình duyệt thật 200%. Body ở 1366 → 1920 → 2560 là 16.27 → 18 → 20px; menu/nút là 14.27 → 16 → 18px; tiêu đề là 26.93 → 31.36 → 36.48px.
 
-Dự án chưa được push, deploy hoặc publish trong lần thay đổi này.
+Mã nguồn: [HoaLearning trên GitHub](https://github.com/tuntoncute123/HoaLearning). Dữ liệu local không được đưa lên Git; môi trường production cần cấu hình PostgreSQL riêng theo hướng dẫn phía trên.
