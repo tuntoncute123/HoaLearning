@@ -1,0 +1,18 @@
+-- UTC text timestamps preserve the existing API contract; binary files persist in PostgreSQL.
+CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,name TEXT NOT NULL,role TEXT NOT NULL CHECK(role IN ('teacher','student')),email TEXT UNIQUE,password TEXT,code TEXT UNIQUE,created_at TEXT DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US'));
+CREATE UNIQUE INDEX IF NOT EXISTS single_teacher ON users(role) WHERE role='teacher';
+CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,user_id TEXT REFERENCES users(id),expires BIGINT);
+CREATE INDEX IF NOT EXISTS sessions_expiry ON sessions(expires);
+CREATE TABLE IF NOT EXISTS documents(id TEXT PRIMARY KEY,name TEXT,filename TEXT,pages INTEGER,created_at TEXT DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US'));
+CREATE TABLE IF NOT EXISTS exams(id TEXT PRIMARY KEY,document_id TEXT REFERENCES documents(id),title TEXT,content TEXT,reviewed INTEGER DEFAULT 0,sort_order BIGSERIAL,created_at TEXT DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US'));
+CREATE TABLE IF NOT EXISTS assignments(id TEXT PRIMARY KEY,exam_id TEXT REFERENCES exams(id),title TEXT,deadline TEXT,duration INTEGER,instructions TEXT,snapshot TEXT,created_at TEXT DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US'));
+CREATE TABLE IF NOT EXISTS attempts(id TEXT PRIMARY KEY,assignment_id TEXT REFERENCES assignments(id),student_id TEXT REFERENCES users(id),answers TEXT DEFAULT '{}',submitted_at TEXT,grade REAL,feedback TEXT,started_at TEXT DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US'),UNIQUE(assignment_id,student_id));
+CREATE TABLE IF NOT EXISTS subscriptions(endpoint TEXT PRIMARY KEY,user_id TEXT REFERENCES users(id),payload TEXT);
+CREATE INDEX IF NOT EXISTS subscriptions_user ON subscriptions(user_id);
+CREATE TABLE IF NOT EXISTS notifications(id TEXT PRIMARY KEY,user_id TEXT REFERENCES users(id),title TEXT,body TEXT,url TEXT,read INTEGER DEFAULT 0,created_at TEXT DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US'));
+CREATE INDEX IF NOT EXISTS notifications_user ON notifications(user_id,created_at DESC);
+CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT);
+CREATE TABLE IF NOT EXISTS assets(key TEXT PRIMARY KEY,document_id TEXT REFERENCES documents(id) ON DELETE CASCADE,mime TEXT NOT NULL,bytes BYTEA NOT NULL);
+CREATE TABLE IF NOT EXISTS rate_limits(key TEXT PRIMARY KEY,hits INTEGER NOT NULL,expires BIGINT NOT NULL);
+CREATE TABLE IF NOT EXISTS uploads(id TEXT PRIMARY KEY,user_id TEXT REFERENCES users(id),name TEXT NOT NULL,size INTEGER NOT NULL CHECK(size>0 AND size<=20971520),expires BIGINT NOT NULL);
+CREATE TABLE IF NOT EXISTS upload_parts(upload_id TEXT REFERENCES uploads(id) ON DELETE CASCADE,part INTEGER NOT NULL CHECK(part>=0 AND part<20),bytes BYTEA NOT NULL,PRIMARY KEY(upload_id,part));
