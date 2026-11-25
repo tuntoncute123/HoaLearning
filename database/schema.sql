@@ -1,5 +1,7 @@
 -- UTC text timestamps preserve the existing API contract; binary files persist in PostgreSQL.
 CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,name TEXT NOT NULL,role TEXT NOT NULL CHECK(role IN ('teacher','student')),email TEXT UNIQUE,password TEXT,code TEXT UNIQUE,created_at TEXT DEFAULT to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI:SS.US'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS users_username ON users(lower(username));
 CREATE UNIQUE INDEX IF NOT EXISTS single_teacher ON users(role) WHERE role='teacher';
 CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,user_id TEXT REFERENCES users(id),expires BIGINT);
 CREATE INDEX IF NOT EXISTS sessions_expiry ON sessions(expires);

@@ -1,5 +1,5 @@
 import { randomBytes, createHash } from "node:crypto";
-import { db, id, publicUser, verifyPassword } from "./database.js";
+import { db, getSetting, id, publicUser, verifyPassword } from "./database.js";
 import { pushKeys, notifyUsers, validSubscription } from "./push.js";
 import { createRouter } from "./http.js";
 import { documentRoutes } from "./documents.js";
@@ -93,8 +93,12 @@ app.get("/api/health", async (_, res) => {
   await db.query("SELECT 1");
   res.json({ ok: true, database: "postgresql" });
 });
+async function demoEnabled() {
+  return !production && (await getSetting("classroom_accounts")) !== "enabled";
+}
 app.get("/api/session", async (req, res) => {
-  if (!req.user && !production) {
+  const demo = await demoEnabled();
+  if (!req.user && demo) {
     const u = await db
       .prepare("SELECT * FROM users WHERE role='teacher'")
       .get();
@@ -105,22 +109,32 @@ app.get("/api/session", async (req, res) => {
   }
   res.json({
     user: publicUser(req.user),
-    demo: !production,
+    demo,
   });
 });
 app.post("/api/auth/login", limiter, async (req, res) => {
   let u;
   const { email, password, code } = req.body;
-  if (code)
+  if (code) {
+    const login = String(code).trim();
     u = await db
-      .prepare("SELECT * FROM users WHERE code=? AND role='student'")
-      .get(String(code).trim().toUpperCase());
-  else {
+      .prepare(
+        "SELECT * FROM users WHERE role='student' AND (lower(username)=lower(?) OR (username IS NULL AND code=?))",
+      )
+      .get(login, login.toUpperCase());
+  } else {
     u = await db
-      .prepare("SELECT * FROM users WHERE email=? AND role='teacher'")
-      .get(String(email).trim());
-    if (u && !verifyPassword(String(password), u.password)) u = null;
+      .prepare(
+        "SELECT * FROM users WHERE role='teacher' AND (lower(username)=lower(?) OR (username IS NULL AND email=?))",
+      )
+      .get(String(email).trim(), String(email).trim());
   }
+  if (
+    u &&
+    (u.role === "teacher" || u.username || u.password) &&
+    (typeof password !== "string" || !verifyPassword(password, u.password))
+  )
+    u = null;
   if (!u)
     return fail(
       res,
@@ -129,11 +143,11 @@ app.post("/api/auth/login", limiter, async (req, res) => {
     );
   res.json({
     user: await session(res, u),
-    demo: !production,
+    demo: await demoEnabled(),
   });
 });
 app.post("/api/auth/demo", async (req, res) => {
-  if (production) return fail(res, 404, "Không tìm thấy.");
+  if (!(await demoEnabled())) return fail(res, 404, "Không tìm thấy.");
   const u = await db
     .prepare("SELECT * FROM users WHERE role=? ORDER BY created_at LIMIT 1")
     .get(req.body.role === "student" ? "student" : "teacher");
@@ -205,7 +219,7 @@ app.get("/api/data", auth, async (req, res) => {
     req.user.role === "teacher"
       ? await db
           .prepare(
-            "SELECT id,name,code,created_at FROM users WHERE role='student'",
+            "SELECT id,name,COALESCE(username,code) AS code,created_at FROM users WHERE role='student'",
           )
           .all()
       : [];

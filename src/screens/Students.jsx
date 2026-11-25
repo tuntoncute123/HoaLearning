@@ -61,7 +61,7 @@ export default function Students({ data, refresh, toast }) {
           onClick={() =>
             csvDownload(
               [
-                ["Họ tên", "Mã đăng nhập", "Lớp"],
+                ["Họ tên", "Tên hoặc mã đăng nhập", "Lớp"],
                 ...data.students.map((s) => [s.name, s.code, 3]),
               ],
               "hoc-sinh-lop-3.csv",
@@ -106,7 +106,7 @@ export default function Students({ data, refresh, toast }) {
           <thead>
             <tr>
               <th>Học sinh</th>
-              <th>Mã đăng nhập riêng</th>
+              <th>Tên hoặc mã đăng nhập</th>
               <th>Bài đã nộp</th>
               <th>Điểm trung bình</th>
             </tr>
@@ -172,9 +172,8 @@ export default function Students({ data, refresh, toast }) {
       <div className="notice">
         <KeyRound size={20} />
         <p>
-          Mỗi em có một mã riêng để đăng nhập tại mục <strong>Học sinh</strong>.
-          Chỉ chia sẻ mã với em và phụ huynh; đây là chìa khóa vào tài khoản của
-          em.
+          Học sinh chọn <strong>Em là học sinh</strong> và nhập thông tin do
+          giáo viên cấp. Với tài khoản có mật khẩu, em điền cả hai ô.
         </p>
       </div>
       {adding && (

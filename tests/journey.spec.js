@@ -8,7 +8,9 @@ test("teacher assigns; student saves offline, submits; teacher grades; PDF impor
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
   await page.getByRole("button", { name: "Tôi là giáo viên" }).click();
-  await page.getByLabel("Email", { exact: true }).fill("teacher@example.com");
+  await page
+    .getByLabel("Tên đăng nhập hoặc email", { exact: true })
+    .fill("teacher@example.com");
   await page
     .getByLabel("Mật khẩu", { exact: true })
     .fill("BrowserTest2026!Secure");
@@ -49,7 +51,7 @@ test("teacher assigns; student saves offline, submits; teacher grades; PDF impor
     student = await context.newPage();
   student.on("pageerror", (e) => errors.push(e.message));
   await student.goto("/");
-  await student.getByLabel("Mã đăng nhập của em").fill(code);
+  await student.getByLabel("Tên hoặc mã đăng nhập của em").fill(code);
   await student.getByRole("button", { name: "Vào lớp thôi" }).click();
   await expect(
     student.getByRole("heading", { name: /mình học thôi/ }),

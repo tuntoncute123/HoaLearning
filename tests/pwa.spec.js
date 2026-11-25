@@ -135,7 +135,7 @@ test("mobile student sees CTA on dashboard and settings; manifest and icons are 
     })
   ).json();
   await context.request.post("/api/auth/logout");
-  await page.getByLabel("Mã đăng nhập của em").fill(student.code);
+  await page.getByLabel("Tên hoặc mã đăng nhập của em").fill(student.code);
   await page.getByRole("button", { name: "Vào lớp thôi" }).click();
   await expect(
     page.getByRole("heading", { name: /mình học thôi/ }),

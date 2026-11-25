@@ -146,7 +146,7 @@ export function Login({ onLogin, demo, install }) {
       onLogin(
         await api("/auth/login", {
           method: "POST",
-          body: role === "student" ? { code } : { email, password },
+          body: role === "student" ? { code, password } : { email, password },
         }),
       );
     } catch (e) {
@@ -174,53 +174,60 @@ export function Login({ onLogin, demo, install }) {
           <button
             type="button"
             className={role === "student" ? "selected" : ""}
-            onClick={() => setRole("student")}
+            onClick={() => {
+              setRole("student");
+              setPassword("");
+              setError("");
+            }}
           >
             Em là học sinh
           </button>
           <button
             type="button"
             className={role === "teacher" ? "selected" : ""}
-            onClick={() => setRole("teacher")}
+            onClick={() => {
+              setRole("teacher");
+              setPassword("");
+              setError("");
+            }}
           >
             Tôi là giáo viên
           </button>
         </div>
-        {role === "student" ? (
-          <Field
-            label="Mã đăng nhập của em"
-            hint="Mã riêng do giáo viên gửi cho em hoặc phụ huynh."
-          >
-            <input
-              autoComplete="username"
-              required
-              placeholder="Nhập mã của em…"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-            />
-          </Field>
-        ) : (
-          <>
-            <Field label="Email">
-              <input
-                type="email"
-                autoComplete="username"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Field>
-            <Field label="Mật khẩu">
-              <input
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Field>
-          </>
-        )}
+        <Field
+          label={
+            role === "student"
+              ? "Tên hoặc mã đăng nhập của em"
+              : "Tên đăng nhập hoặc email"
+          }
+        >
+          <input
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            value={role === "student" ? code : email}
+            onChange={(e) =>
+              (role === "student" ? setCode : setEmail)(e.target.value)
+            }
+          />
+        </Field>
+        <Field
+          label="Mật khẩu"
+          hint={
+            role === "student"
+              ? "Nếu em chỉ được cấp mã đăng nhập, hãy để trống ô này."
+              : undefined
+          }
+        >
+          <input
+            type="password"
+            autoComplete="current-password"
+            required={role === "teacher"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
         {error && (
           <p className="error-text" role="alert">
             {error}
